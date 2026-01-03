@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
-from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
+from homeassistant.components.sensor import (
+    SensorEntity,
+    SensorEntityDescription,
+    SensorDeviceClass,
+    SensorStateClass,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
@@ -12,35 +15,28 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN
 from .coordinator import BrewBubblesCoordinator
 
-INVALID_TEMP = -100
-
-@dataclass(frozen=True)
-class BrewBubblesSensorDescription:
-    key: str
-    name: str
-    device_class: SensorDeviceClass | None = None
-    state_class: SensorStateClass | None = None
+INVALID_TEMP = -100.0
 
 
-SENSORS = [
-    BrewBubblesSensorDescription(
+SENSORS: tuple[SensorEntityDescription, ...] = (
+    SensorEntityDescription(
         key="bpm",
         name="Bubbles per Minute",
         state_class=SensorStateClass.MEASUREMENT,
     ),
-    BrewBubblesSensorDescription(
+    SensorEntityDescription(
         key="temp",
         name="Vessel Temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
     ),
-    BrewBubblesSensorDescription(
+    SensorEntityDescription(
         key="ambient",
         name="Ambient Temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
     ),
-]
+)
 
 
 async def async_setup_entry(
@@ -56,26 +52,28 @@ async def async_setup_entry(
 
 
 class BrewBubblesSensor(CoordinatorEntity[BrewBubblesCoordinator], SensorEntity):
-    def __init__(self, coordinator: BrewBubblesCoordinator, entry: ConfigEntry, desc: BrewBubblesSensorDescription):
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        coordinator: BrewBubblesCoordinator,
+        entry: ConfigEntry,
+        description: SensorEntityDescription,
+    ) -> None:
         super().__init__(coordinator)
+        self.entity_description = description
         self._entry = entry
-        self.entity_description = desc
 
-        self._attr_has_entity_name = True
-        self._attr_name = desc.name
-        self._attr_unique_id = f"{entry.data.get('hostname', entry.data['host'])}_{desc.key}"
-
-        if desc.device_class:
-            self._attr_device_class = desc.device_class
-        if desc.state_class:
-            self._attr_state_class = desc.state_class
+        hostname = entry.data.get("hostname", entry.data["host"])
+        self._attr_unique_id = f"{hostname}_{description.key}"
 
     @property
     def native_value(self):
         data = self.coordinator.data or {}
-        val = data.get(self.entity_description.key)
+        key = self.entity_description.key
+        val = data.get(key)
 
-        if self.entity_description.key in ("temp", "ambient"):
+        if key in ("temp", "ambient"):
             if val is None:
                 return None
             try:
@@ -90,10 +88,12 @@ class BrewBubblesSensor(CoordinatorEntity[BrewBubblesCoordinator], SensorEntity)
 
     @property
     def native_unit_of_measurement(self):
-        if self.entity_description.key == "bpm":
+        key = self.entity_description.key
+
+        if key == "bpm":
             return "bubbles/min"
 
-        if self.entity_description.key in ("temp", "ambient"):
+        if key in ("temp", "ambient"):
             unit = (self.coordinator.data or {}).get("temp_unit")
             if unit == "F":
                 return UnitOfTemperature.FAHRENHEIT
