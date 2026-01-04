@@ -38,11 +38,6 @@ SENSORS: tuple[SensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
     ),
-    SensorEntityDescription(
-        key="firmware_version",
-        name="Firmware Version",
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
 )
 
 

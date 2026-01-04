@@ -29,15 +29,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Register device with a stable identifier (hostname), but a friendly name (fermenter name)
     hostname = entry.data.get("hostname", entry.data["host"])
-    fermenter_name = (coordinator.data or {}).get("name") or entry.title or hostname
+
+    bubble_data = coordinator.data or {}
+    vessel_name = bubble_data.get("name") or entry.title or hostname
+
+    version_data = version_coordinator.data or {}
+    this_version = (version_data.get("this") or {}).get("version")
 
     device_reg = dr.async_get(hass)
     device_reg.async_get_or_create(
         config_entry_id=entry.entry_id,
         identifiers={(DOMAIN, hostname)},
-        name=fermenter_name,
+        name=vessel_name,
         manufacturer="Brew Bubbles",
         model="Brew Bubbles",
+        sw_version=this_version,
+        hw_version=hostname,
         configuration_url=f"http://{entry.data['host']}",
     )
 
