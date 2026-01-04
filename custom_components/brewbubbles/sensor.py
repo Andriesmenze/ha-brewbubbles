@@ -8,14 +8,13 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import BrewBubblesCoordinator
-
-INVALID_TEMP = -100.0
 
 
 SENSORS: tuple[SensorEntityDescription, ...] = (
@@ -38,6 +37,11 @@ SENSORS: tuple[SensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+    ),
+    SensorEntityDescription(
+        key="firmware_version",
+        name="Firmware Version",
+        entity_category=EntityCategory.DIAGNOSTIC,
     ),
 )
 

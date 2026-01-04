@@ -6,7 +6,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import BrewBubblesClient, BrewBubblesCannotConnect, BrewBubblesInvalidResponse
-from .const import DOMAIN
+from .const import DOMAIN, CONF_TEMPFORMAT, TEMP_C, TEMP_F
 
 
 class BrewBubblesConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -55,3 +55,29 @@ class BrewBubblesConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             title=f"Brew Bubbles - {title_name}",
             data={"host": host, "hostname": hostname},
         )
+    
+    @staticmethod
+    def async_get_options_flow(config_entry):
+        return BrewBubblesOptionsFlowHandler(config_entry)
+
+
+class BrewBubblesOptionsFlowHandler(config_entries.OptionsFlow):
+    def __init__(self, entry: config_entries.ConfigEntry) -> None:
+        self._entry = entry
+
+    async def async_step_init(self, user_input=None):
+        if user_input is None:
+            current = self._entry.options.get(CONF_TEMPFORMAT, TEMP_C)
+            return self.async_show_form(
+                step_id="init",
+                data_schema=vol.Schema({
+                    vol.Required(CONF_TEMPFORMAT, default=current): vol.In([TEMP_C, TEMP_F])
+                }),
+            )
+
+        # push setting to device
+        session = async_get_clientsession(self.hass)
+        client = BrewBubblesClient(session, self._entry.data["host"])
+        await client.set_temp_unit(user_input[CONF_TEMPFORMAT])
+
+        return self.async_create_entry(title="", data=user_input)

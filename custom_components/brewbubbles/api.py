@@ -43,3 +43,32 @@ class BrewBubblesClient:
         if not isinstance(data, dict):
             raise BrewBubblesInvalidResponse("Expected JSON object")
         return data
+
+    async def get_that_version(self) -> dict:
+        return await self._get_json("/thatVersion/")
+
+    async def start_ota(self) -> None:
+        await self._get_ok("/otastart/")
+
+    async def set_temp_unit(self, unit: str) -> None:
+        await self._post_json("/settings/temperature/", {"tempformat": unit})
+
+    async def _get_ok(self, path: str) -> None:
+        try:
+            async with async_timeout.timeout(10):
+                resp = await self._session.get(self._url(path))
+            resp.raise_for_status()
+        except Exception as err:
+            raise BrewBubblesCannotConnect(str(err)) from err
+
+    async def _post_json(self, path: str, payload: dict) -> dict:
+        try:
+            async with async_timeout.timeout(10):
+                resp = await self._session.post(self._url(path), json=payload)
+            resp.raise_for_status()
+            try:
+                return await resp.json(content_type=None)
+            except Exception:
+                return {}
+        except Exception as err:
+            raise BrewBubblesCannotConnect(str(err)) from err
