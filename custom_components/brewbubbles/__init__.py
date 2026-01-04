@@ -41,10 +41,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         config_entry_id=entry.entry_id,
         identifiers={(DOMAIN, hostname)},
         name=vessel_name,
-        manufacturer="Brew Bubbles",
-        model="Brew Bubbles",
         sw_version=this_version,
-        hw_version=hostname,
         configuration_url=f"http://{entry.data['host']}",
     )
 
