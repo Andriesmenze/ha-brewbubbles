@@ -76,6 +76,15 @@ class BrewBubblesSensor(CoordinatorEntity[BrewBubblesCoordinator], SensorEntity)
         key = self.entity_description.key
         val = data.get(key)
 
+        if key == "bpm":
+            val = data.get("bpm")
+            if val is None:
+                return None
+            try:
+                return float(val)
+            except (TypeError, ValueError):
+                return None
+
         if key in ("temp", "ambient"):
             if val is None:
                 return None
@@ -88,6 +97,8 @@ class BrewBubblesSensor(CoordinatorEntity[BrewBubblesCoordinator], SensorEntity)
                 return None
 
             return fval
+        
+        return data.get(key)
 
     @property
     def native_unit_of_measurement(self):
