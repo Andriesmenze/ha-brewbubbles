@@ -23,18 +23,21 @@ SENSORS: tuple[SensorEntityDescription, ...] = (
         key="bpm",
         name="Bubbles per Minute",
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=1,
     ),
     SensorEntityDescription(
         key="temp",
         name="Vessel Temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=1,
     ),
     SensorEntityDescription(
         key="ambient",
         name="Ambient Temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=1,
     ),
 )
 
@@ -80,11 +83,11 @@ class BrewBubblesSensor(CoordinatorEntity[BrewBubblesCoordinator], SensorEntity)
                 fval = float(val)
             except (TypeError, ValueError):
                 return None
-            if fval == INVALID_TEMP:
-                return None
-            return fval
 
-        return val
+            if fval <= -127:
+                return None
+
+            return fval
 
     @property
     def native_unit_of_measurement(self):
