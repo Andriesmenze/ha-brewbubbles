@@ -7,7 +7,7 @@ from homeassistant.helpers import device_registry as dr
 
 from .api import BrewBubblesClient
 from .const import DOMAIN
-from .coordinator import BrewBubblesCoordinator
+from .coordinator import BrewBubblesCoordinator, BrewBubblesVersionCoordinator
 
 PLATFORMS = ["sensor", "button", "update"]
 
