@@ -51,7 +51,7 @@ class BrewBubblesClient:
         await self._get_ok("/otastart/")
 
     async def set_temp_unit(self, unit: str) -> None:
-        await self._post_json("/settings/temperature/", {"tempformat": unit})
+        await self._post_form("/settings/temperature/", {"tempformat": unit})
 
     async def _get_ok(self, path: str) -> None:
         try:
@@ -61,14 +61,10 @@ class BrewBubblesClient:
         except Exception as err:
             raise BrewBubblesCannotConnect(str(err)) from err
 
-    async def _post_json(self, path: str, payload: dict) -> dict:
+    async def _post_form(self, path: str, payload: dict) -> None:
         try:
             async with async_timeout.timeout(10):
-                resp = await self._session.post(self._url(path), json=payload)
+                resp = await self._session.post(self._url(path), data=payload)
             resp.raise_for_status()
-            try:
-                return await resp.json(content_type=None)
-            except Exception:
-                return {}
         except Exception as err:
             raise BrewBubblesCannotConnect(str(err)) from err

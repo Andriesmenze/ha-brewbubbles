@@ -40,9 +40,18 @@ class BrewBubblesVersionCoordinator(DataUpdateCoordinator[dict]):
         self.client = client
 
     async def _async_update_data(self) -> dict:
+        this_v = None
+        that_v = None
+
         try:
             this_v = await self.client.get_this_version()
-            that_v = await self.client.get_that_version()
-            return {"this": this_v, "that": that_v}
         except BrewBubblesApiError as err:
-            raise UpdateFailed(str(err)) from err
+            raise UpdateFailed(f"Failed to fetch local version: {err}") from err
+
+        try:
+            that_v = await self.client.get_that_version()
+        except BrewBubblesApiError:
+            # No internet / blocked; keep installed_version working
+            that_v = None
+
+        return {"this": this_v, "that": that_v}

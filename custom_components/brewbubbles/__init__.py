@@ -9,7 +9,7 @@ from .api import BrewBubblesClient
 from .const import DOMAIN
 from .coordinator import BrewBubblesCoordinator, BrewBubblesVersionCoordinator
 
-PLATFORMS = ["sensor", "button", "update"]
+PLATFORMS = ["sensor", "update", "select"]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     session = async_get_clientsession(hass)
